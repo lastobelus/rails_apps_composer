@@ -3,6 +3,18 @@
 
 after_bundler do
   say_wizard "recipe running after 'bundle install'"
+  ### TEST/UNIT ###
+  if prefer :unit_test, 'test_unit'
+    inject_into_file 'config/application.rb', :after => "Rails::Application\n" do <<-RUBY
+
+    config.generators do |g|
+      #{"g.test_framework :test_unit, fixture_replacement: :fabrication" if prefer :fixtures, 'fabrication'}
+      #{"g.fixture_replacement :fabrication, dir: 'test/fabricators'" if prefer :fixtures, 'fabrication'}
+    end
+
+RUBY
+    end  
+  end
   ### RSPEC ###
   if prefer :unit_test, 'rspec'
     say_wizard "recipe installing RSpec"
@@ -20,9 +32,13 @@ RUBY
 
     # don't generate RSpec tests for views and helpers
     config.generators do |g|
+      #{"g.test_framework :rspec" if prefer :fixtures, 'none'}
+      #{"g.test_framework :rspec, fixture: true" unless prefer :fixtures, 'none'}
+      #{"g.fixture_replacement :factory_girl" if prefer :fixtures, 'factory_girl'}
+      #{"g.fixture_replacement :machinist" if prefer :fixtures, 'machinist'}
+      #{"g.fixture_replacement :fabrication" if prefer :fixtures, 'fabrication'}
       g.view_specs false
       g.helper_specs false
-      #{"g.fixture_replacement :machinist" if prefer :fixtures, 'machinist'}
     end
 
 RUBY
@@ -73,6 +89,7 @@ RUBY
         "\n  DatabaseCleaner.orm = 'mongoid'"
       end
     end
+    generate 'fabrication:cucumber_steps' if prefer :fixtures, 'fabrication'
   end
   ## TURNIP
   if prefer :integration, 'turnip'
@@ -87,7 +104,7 @@ RUBY
   end
   ### GIT ###
   git :add => '-A' if prefer :git, true
-  git :commit => "-qm 'rails_apps_composer: testing framework'" if prefer :git, true
+  git :commit => '-qm "rails_apps_composer: testing framework"' if prefer :git, true
 end # after_bundler
 
 after_everything do
@@ -145,7 +162,7 @@ after_everything do
     end
     ## GIT
     git :add => '-A' if prefer :git, true
-    git :commit => "-qm 'rails_apps_composer: rspec files'" if prefer :git, true
+    git :commit => '-qm "rails_apps_composer: rspec files"' if prefer :git, true
   end
   ### CUCUMBER ###
   if prefer :integration, 'cucumber'
@@ -215,7 +232,27 @@ RUBY
     end
     ## GIT
     git :add => '-A' if prefer :git, true
-    git :commit => "-qm 'rails_apps_composer: cucumber files'" if prefer :git, true
+    git :commit => '-qm "rails_apps_composer: cucumber files"' if prefer :git, true
+  end
+  ### FABRICATION ###
+  if prefer :fixtures, 'fabrication'
+    say_wizard "replacing FactoryGirl fixtures with Fabrication"
+    remove_file 'spec/factories/users.rb'
+    remove_file 'spec/fabricators/user_fabricator.rb'
+    create_file 'spec/fabricators/user_fabricator.rb' do
+      <<-RUBY
+Fabricator(:user) do
+  name     'Test User'
+  email    'example@example.com'
+  password 'please'
+  password_confirmation 'please'
+  # required if the Devise Confirmable module is used
+  # confirmed_at Time.now
+end
+RUBY
+    end
+    gsub_file 'features/step_definitions/user_steps.rb', /@user = FactoryGirl.create\(:user, email: @visitor\[:email\]\)/, '@user = Fabricate(:user, email: @visitor[:email])'
+    gsub_file 'spec/controllers/users_controller_spec.rb', /@user = FactoryGirl.create\(:user\)/, '@user = Fabricate(:user)'
   end
 end # after_everything 
   

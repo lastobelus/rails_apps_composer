@@ -1,5 +1,38 @@
 h1. CHANGELOG
 
+h2. 2.2.15 October 12, 2012
+
+* use appropriate specs and features when 'fabrication' is selected (contributed by Taylor Mock)
+
+h2. 2.2.14 October 11, 2012
+
+* fix errors for rails-prelaunch-signup app
+* minor change to prompt for 'drop any existing databases'
+* minor change to prompt for Slim
+* update gem 'mongoid' from 3.0.6 to 3.0.9
+* update gem 'simple_form' from 2.0.3 to 2.0.4
+* update gem 'database_cleaner' from 0.8.0 to 0.9.1
+
+h2. 2.2.13 October 10, 2012
+
+* add 'change roles' and 'delete user' features to admin app
+* improve 'views' recipes so Devise forms use SimpleForm when selected
+* improve 'railsapps' recipes to use 'quiet_assets'
+
+h2. 2.2.12 October 6, 2012
+
+* add MiniTest to testing options
+* add 'fabrication' gem to fixtures options (contributed by Taylor Mock)
+* improve 'extras' recipe to add 'quiet_assets' option
+
+h2. 2.2.11 October 5, 2012
+
+* add optional 'quiet' flag to suppress prompts (contributed by Michael Johnston)
+* remove grouped expression warning in ruby 1.9.3 (contributed by Michael Johnston)
+* improve 'extras' recipe to allow 'github' preference
+* use doublequotes instead of singles for 'git commit' to accommodate Windows (issue 123)
+* fix 'gems' recipe to properly rename PostgreSQL databases
+
 h2. 2.2.10 September 30, 2012
 
 * use 'git add -A' instead of 'git add .' (and use '-qm' instead of '-aqm' for git commit)
