@@ -31,6 +31,59 @@ module RailsWizard
       run_template(nil, recipes, gems, nil, defaults, template_name)
     end
 
+    desc "generate RECIPE_NAME", "run recipes on an existing Rails app"
+    # method_option :recipes, :type => :array, :aliases => "-r"
+    method_option :defaults, :type => :string, :aliases => "-d"
+    method_option :recipe_dirs, :type => :array, :aliases => "-l"
+    method_option :quiet, :type => :boolean, :aliases => "-q", :default => false
+    def generate(recipe_name)
+      puts "0"
+      add_recipes
+      #FIXME -- separate recipes, defaults
+      recipes, defaults = load_defaults
+      recipes = [recipe_name]
+      # args = ask_for_args(defaults)
+      # recipes = ask_for_recipes(recipes)
+      # gems = ask_for_gems(defaults)
+      gen_dir = File.join(Dir.pwd, 'lib', 'generators', 'rails_apps_composer', 'transient')
+      FileUtils.mkdir_p(gen_dir)
+      file_name = File.join(gen_dir, 'transient_generator.rb')
+      file = File.new(file_name,'w')
+
+      puts "1"
+      begin
+        template = RailsWizard::Template.new(recipes, [], [], defaults)
+        template.layout = 'generator'
+        
+        puts "2"
+        
+        generator = template.compile
+
+        file.write generator
+
+        puts "2.1"
+        puts generator if  ENV['RAILS_APPS_COMPOSER_DEBUG']
+
+        puts "2.2"
+        
+        file.close
+
+        puts "3"
+        
+        puts "\"rails generate rails_apps_composer:transient\""
+        system "rails generate rails_apps_composer:transient"
+      rescue RailsWizard::UnknownRecipeError
+        puts $!.inspect
+        say "error: #{$!.message}"
+        raise Thor::Error.new("> #{red}#{$!.message}.#{clear}")
+      rescue
+        puts $!.inspect
+      ensure
+        file.delete unless ENV['RAILS_APPS_COMPOSER_DEBUG']
+      end
+    end
+
+
     desc "list [CATEGORY]", "list available recipes (optionally by category)"
     def list(category = nil)
       if category
@@ -75,7 +128,7 @@ module RailsWizard
         puts
         puts "#{bold}#{cyan}Available Recipes#{clear}:"
         RailsWizard::Recipes.categories.each do |category|
-          puts "#{bold}#{cyan}#{category}#{clear}: " +RailsWizard::Recipes.for(category).collect {|recipe|
+          puts "#{bold}#{cyan}#{category}#{clear}: " + RailsWizard::Recipes.for(category).collect {|recipe|
             recipes.include?(recipe) ? "#{green}#{bold}#{recipe}#{clear}" : recipe
           }.join(', ')
         end

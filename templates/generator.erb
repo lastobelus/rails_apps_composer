@@ -1,0 +1,21 @@
+module RailsAppsComposer
+  module Generators
+    class TransientGenerator < Rails::Generators::Base
+      
+      <% resolve_recipes.each do |recipe| %>
+          def <%= "run_recipe_#{ActiveSupport::Inflector.underscore(ActiveSupport::Inflector.demodulize(recipe))}" %>
+            @recipes = <%= resolve_recipes.map(&:key).inspect %>
+            @prefs = <%= resolve_preferences %>
+            @gems = <%= resolve_gems %>
+            @diagnostics_recipes = <%= resolve_diagnostics_recipes %>
+            @diagnostics_prefs = <%= resolve_diagnostics_prefs %>
+            diagnostics = {}
+            <%= render 'recipe', recipe.get_binding %>
+          end
+      <% end %>
+      protected
+      <%= render "helpers" %>
+      
+    end
+  end
+end
