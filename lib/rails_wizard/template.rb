@@ -1,8 +1,10 @@
 module RailsWizard
   class Template
     attr_reader :recipes, :gems, :args, :defaults
+    attr_accessor :layout
 
     def initialize(recipes, gems=[], args=[], defaults={})
+      @layout = 'layout'
       @recipes = recipes.map{|r| RailsWizard::Recipe.from_mongo(r)}
       @args = args
       @defaults = defaults
@@ -94,7 +96,7 @@ module RailsWizard
     end
 
     def compile
-      render 'layout', binding
+      render layout, binding
     end
 
     def args
