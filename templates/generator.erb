@@ -18,14 +18,14 @@ module RailsAppsComposer
               run 'bundle install --without production'
             end
 
+            <%= render 'recipe', recipe.get_binding %>
+
             after_blocks.each{|b| config = configs[b[0]] || {}; @current_recipe = b[0]; b[1].call}
 
             @current_recipe = nil
             say_wizard "Running 'after everything' callbacks."
             after_everything_blocks.each{|b| config = configs[b[0]] || {}; @current_recipe = b[0]; b[1].call}
 
-
-            <%= render 'recipe', recipe.get_binding %>
           end
       <% end %>
       protected
