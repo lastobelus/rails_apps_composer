@@ -58,7 +58,7 @@ module RailsWizard
 
         file.write generator
 
-        puts generator if  ENV['RAILS_APPS_COMPOSER_DEBUG']
+        # puts generator if  ENV['RAILS_APPS_COMPOSER_DEBUG']
 
         file.close
 
