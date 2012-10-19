@@ -50,27 +50,19 @@ module RailsWizard
       file_name = File.join(gen_dir, 'transient_generator.rb')
       file = File.new(file_name,'w')
 
-      puts "1"
       begin
         template = RailsWizard::Template.new(recipes, [], [], defaults)
         template.layout = 'generator'
-        
-        puts "2"
         
         generator = template.compile
 
         file.write generator
 
-        puts "2.1"
         puts generator if  ENV['RAILS_APPS_COMPOSER_DEBUG']
 
-        puts "2.2"
-        
         file.close
 
-        puts "3"
-        
-        puts "\"rails generate rails_apps_composer:transient\""
+        say "\"rails generate rails_apps_composer:transient\""
         system "rails generate rails_apps_composer:transient"
       rescue RailsWizard::UnknownRecipeError
         puts $!.inspect
@@ -79,7 +71,7 @@ module RailsWizard
       rescue
         puts $!.inspect
       ensure
-        file.delete unless ENV['RAILS_APPS_COMPOSER_DEBUG']
+        File.delete(file) unless ENV['RAILS_APPS_COMPOSER_DEBUG']
       end
     end
 
