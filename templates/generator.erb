@@ -10,7 +10,25 @@ module RailsAppsComposer
             @diagnostics_recipes = <%= resolve_diagnostics_recipes %>
             @diagnostics_prefs = <%= resolve_diagnostics_prefs %>
             diagnostics = {}
+
+
             <%= render 'recipe', recipe.get_binding %>
+
+            say_wizard "Installing gems. This will take a while."
+            Bundler.with_clean_env do
+              if prefs.has_key? :bundle_path
+                run "bundle install --without production --path #{prefs[:bundle_path]}"
+              else
+                run "bundle install --without production"
+              end
+            end
+
+            after_blocks.each{|b| config = configs[b[0]] || {}; @current_recipe = b[0]; b[1].call}
+
+            @current_recipe = nil
+            say_wizard "Running 'after everything' callbacks."
+            after_everything_blocks.each{|b| config = configs[b[0]] || {}; @current_recipe = b[0]; b[1].call}
+
           end
       <% end %>
       protected
