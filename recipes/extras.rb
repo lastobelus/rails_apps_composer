@@ -102,6 +102,7 @@ end
 ## GITHUB
 if config['github']
   prefs[:github] = true
+  prefs[:private_repo] = config['private_repo']
 end
 if prefs[:github]
   gem 'hub', '>= 1.10.2', :require => nil, :group => [:development]
@@ -112,7 +113,7 @@ if prefs[:github]
       say_wizard "Repository already exists:"
       say_wizard "#{git_uri}"
     else
-      if config['private_repo']
+      if prefs['private_repo']
         run "hub create -p #{app_name}"
       else
         run "hub create #{app_name}"
