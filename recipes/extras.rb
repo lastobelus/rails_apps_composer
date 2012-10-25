@@ -113,7 +113,7 @@ if prefs[:github]
       say_wizard "Repository already exists:"
       say_wizard "#{git_uri}"
     else
-      if prefs['private_repo']
+      if prefs[:private_repo]
         run "hub create -p #{app_name}"
       else
         run "hub create #{app_name}"
