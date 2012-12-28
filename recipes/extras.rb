@@ -105,7 +105,9 @@ if config['github']
   prefs[:private_repo] = config['private_repo']
 end
 if prefs[:github]
-  gem 'hub', '>= 1.10.2', :require => nil, :group => [:development]
+  if `which hub` == ""
+    gem 'hub', '>= 1.10.2', :require => nil, :group => [:development]
+  end
   after_everything do
     say_wizard "recipe creating GitHub repository"
     git_uri = `git config remote.origin.url`.strip
