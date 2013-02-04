@@ -4,7 +4,7 @@
 ### GEMFILE ###
 
 ## Ruby on Rails
-insert_into_file 'Gemfile', "ruby '1.9.3'\n", :before => "gem 'rails', '3.2.6'" if prefer :deploy, 'heroku'
+insert_into_file 'Gemfile', "ruby '1.9.3'\n", :before => "gem 'rails'" if prefer :deploy, 'heroku'
 
 ## Web Server
 if (prefs[:dev_webserver] == prefs[:prod_webserver])
@@ -47,7 +47,7 @@ end
 ## Testing Framework
 if prefer :unit_test, 'rspec'
   gem 'rspec-rails', '>= 2.11.0', :group => [:development, :test]
-  gem 'capybara', '>= 1.1.2', :group => :test if prefer :integration, 'rspec-capybara'
+  gem 'capybara', '>= 2.0', :group => :test if prefer :integration, 'rspec-capybara'
   if prefer :orm, 'mongoid'
     # use the database_cleaner gem to reset the test database
     gem 'database_cleaner', '>= 0.9.1', :group => :test
