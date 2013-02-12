@@ -10,6 +10,25 @@ if prefs[:quiet_assets]
   gem 'quiet_assets', '>= 1.0.1', :group => :development
 end
 
+## LOCAL_ENV.YML FILE
+if config['local_env_file']
+  prefs[:local_env_file] = true
+end
+if prefs[:local_env_file]
+  say_wizard "recipe creating application.yml file for environment variables"
+  gem 'figaro', '>= 0.5.3'
+end
+
+## BETTER ERRORS
+if config['better_errors']
+  prefs[:better_errors] = true
+end
+if prefs[:better_errors]
+  say_wizard "recipe adding better_errors gem"
+  gem 'better_errors', '>= 0.3.2', :group => :development
+  gem 'binding_of_caller', '>= 0.6.8', :group => :development
+end
+
 ## BAN SPIDERS
 if config['ban_spiders']
   prefs[:ban_spiders] = true
@@ -30,7 +49,8 @@ case RbConfig::CONFIG['host_os']
       # was it already added for bootstrap-less?
       unless prefer :bootstrap, 'less'
         say_wizard "recipe adding 'therubyracer' JavaScript runtime gem"
-        gem 'therubyracer', '>= 0.10.2', :group => :assets, :platform => :ruby
+        gem 'libv8', '>= 3.11.8'
+        gem 'therubyracer', '>= 0.11.3', :group => :assets, :platform => :ruby, :require => 'v8'
       end
     end
 end
@@ -40,44 +60,47 @@ if config['rvmrc']
   prefs[:rvmrc] = true
 end
 if prefs[:rvmrc]
-  say_wizard "recipe creating project-specific rvm gemset and .rvmrc"
-  # using the rvm Ruby API, see:
-  # http://blog.thefrontiergroup.com.au/2010/12/a-brief-introduction-to-the-rvm-ruby-api/
-  # https://rvm.io/integration/passenger
-  if ENV['MY_RUBY_HOME'] && ENV['MY_RUBY_HOME'].include?('rvm')
+  if which("rvm")
+    say_wizard "recipe creating project-specific rvm gemset and .rvmrc"
+    # using the rvm Ruby API, see:
+    # http://blog.thefrontiergroup.com.au/2010/12/a-brief-introduction-to-the-rvm-ruby-api/
+    # https://rvm.io/integration/passenger
+    if ENV['MY_RUBY_HOME'] && ENV['MY_RUBY_HOME'].include?('rvm')
+      begin
+        gems_path = ENV['MY_RUBY_HOME'].split(/@/)[0].sub(/rubies/,'gems')
+        ENV['GEM_PATH'] = "#{gems_path}:#{gems_path}@global"
+        require 'rvm'
+        RVM.use_from_path! File.dirname(File.dirname(__FILE__))
+      rescue LoadError
+        raise "RVM gem is currently unavailable."
+      end
+    end
+    say_wizard "creating RVM gemset '#{app_name}'"
+    RVM.gemset_create app_name
+    say_wizard "switching to gemset '#{app_name}'"
+    # RVM.gemset_use! requires rvm version 1.11.3.5 or newer
+    rvm_spec =
+      if Gem::Specification.respond_to?(:find_by_name)
+        Gem::Specification.find_by_name("rvm")
+      else
+        Gem.source_index.find_name("rvm").last
+      end
+      unless rvm_spec.version > Gem::Version.create('1.11.3.4')
+        say_wizard "rvm gem version: #{rvm_spec.version}"
+        raise "Please update rvm gem to 1.11.3.5 or newer"
+      end
     begin
-      gems_path = ENV['MY_RUBY_HOME'].split(/@/)[0].sub(/rubies/,'gems')
-      ENV['GEM_PATH'] = "#{gems_path}:#{gems_path}@global"
-      require 'rvm'
-      RVM.use_from_path! File.dirname(File.dirname(__FILE__))
-    rescue LoadError
-      raise "RVM gem is currently unavailable."
+      RVM.gemset_use! app_name
+    rescue => e
+      say_wizard "rvm failure: unable to use gemset #{app_name}, reason: #{e}"
+      raise
     end
+    run "rvm gemset list"
+    copy_from_repo '.rvmrc'
+    gsub_file '.rvmrc', /App_Name/, "#{app_name}"
+  else
+    say_wizard "WARNING! RVM does not appear to be available."
   end
-  say_wizard "creating RVM gemset '#{app_name}'"
-  RVM.gemset_create app_name
-  run "rvm rvmrc trust"
-  say_wizard "switching to gemset '#{app_name}'"
-  # RVM.gemset_use! requires rvm version 1.11.3.5 or newer
-  rvm_spec =
-    if Gem::Specification.respond_to?(:find_by_name)
-      Gem::Specification.find_by_name("rvm")
-    else
-      Gem.source_index.find_name("rvm").last
-    end
-    unless rvm_spec.version > Gem::Version.create('1.11.3.4')
-      say_wizard "rvm gem version: #{rvm_spec.version}"
-      raise "Please update rvm gem to 1.11.3.5 or newer"
-    end
-  begin
-    RVM.gemset_use! app_name
-  rescue => e
-    say_wizard "rvm failure: unable to use gemset #{app_name}, reason: #{e}"
-    raise
-  end
-  run "rvm gemset list"
-  copy_from_repo '.rvmrc'
-  gsub_file '.rvmrc', /App_Name/, "#{app_name}"
 end
 
 ## AFTER_EVERYTHING
@@ -145,6 +168,12 @@ config:
   - quiet_assets:
       type: boolean
       prompt: Reduce assets logger noise during development?
+  - local_env_file:
+      type: boolean
+      prompt: Use application.yml file for environment variables?
+  - better_errors:
+      type: boolean
+      prompt: Improve error reporting with 'better_errors' during development?
   - ban_spiders:
       type: boolean
       prompt: Set a robots.txt file to ban spiders?

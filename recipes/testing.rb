@@ -13,7 +13,7 @@ after_bundler do
     end
 
 RUBY
-    end  
+    end
   end
   ### RSPEC ###
   if prefer :unit_test, 'rspec'
@@ -34,7 +34,7 @@ RUBY
     config.generators do |g|
       #{"g.test_framework :rspec" if prefer :fixtures, 'none'}
       #{"g.test_framework :rspec, fixture: true" unless prefer :fixtures, 'none'}
-      #{"g.fixture_replacement :factory_girl" if prefer :fixtures, 'factory_girl'}
+      #{"g.fixture_replacement :factory_girl, dir: 'spec/factories'" if prefer :fixtures, 'factory_girl'}
       #{"g.fixture_replacement :machinist" if prefer :fixtures, 'machinist'}
       #{"g.fixture_replacement :fabrication" if prefer :fixtures, 'fabrication'}
       g.view_specs false
@@ -244,18 +244,22 @@ RUBY
 Fabricator(:user) do
   name     'Test User'
   email    'example@example.com'
-  password 'please'
-  password_confirmation 'please'
+  password 'changeme'
+  password_confirmation 'changeme'
   # required if the Devise Confirmable module is used
   # confirmed_at Time.now
 end
 RUBY
     end
-    gsub_file 'features/step_definitions/user_steps.rb', /@user = FactoryGirl.create\(:user, email: @visitor\[:email\]\)/, '@user = Fabricate(:user, email: @visitor[:email])'
-    gsub_file 'spec/controllers/users_controller_spec.rb', /@user = FactoryGirl.create\(:user\)/, '@user = Fabricate(:user)'
+    if prefer :integration, 'cucumber'
+      gsub_file 'features/step_definitions/user_steps.rb', /@user = FactoryGirl.create\(:user, email: @visitor\[:email\]\)/, '@user = Fabricate(:user, email: @visitor[:email])'
+    end
+    if File.exist?('spec/controllers/users_controller_spec.rb')
+      gsub_file 'spec/controllers/users_controller_spec.rb', /@user = FactoryGirl.create\(:user\)/, '@user = Fabricate(:user)'
+    end
   end
-end # after_everything 
-  
+end # after_everything
+
 __END__
 
 name: testing

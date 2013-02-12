@@ -8,6 +8,8 @@ module RailsWizard
     method_option :recipes, :type => :array, :aliases => "-r"
     method_option :defaults, :type => :string, :aliases => "-d"
     method_option :recipe_dirs, :type => :array, :aliases => "-l"
+    method_option :no_default_recipes, :type => :boolean, :aliases => "-L"
+    method_option :template_root, :type => :string, :aliases => '-t'
     method_option :quiet, :type => :boolean, :aliases => "-q", :default => false
     def new(name)
       add_recipes
@@ -22,6 +24,8 @@ module RailsWizard
     method_option :recipes, :type => :array, :aliases => "-r"
     method_option :defaults, :type => :string, :aliases => "-d"
     method_option :recipe_dirs, :type => :array, :aliases => "-l"
+    method_option :no_default_recipes, :type => :boolean, :aliases => "-L"
+    method_option :template_root, :type => :string, :aliases => '-t'
     method_option :quiet, :type => :boolean, :aliases => "-q", :default => false
     def template(template_name)
       add_recipes
@@ -99,6 +103,7 @@ module RailsWizard
       def yellow; "\033[33m" end
 
       def add_recipes
+        Recipes.clear if options[:no_default_recipes]
         if dirs = options[:recipe_dirs]
           dirs.each { |d| Recipes.add_from_directory(d) }
         end
@@ -180,23 +185,27 @@ module RailsWizard
           default
         end
       end
-      
+
       def ask_for_args(defaults)
         args = []
         default_args = defaults["args"] || {}
-        
+
         question = "#{bold}Would you like to skip Test::Unit? (yes for RSpec) \033[33m(y/n)\033[0m#{clear}"
         args << "-T" if ask_for_arg(question, default_args[:skip_test_unit])
 
         question = "#{bold}Would you like to skip Active Record? (yes for MongoDB) \033[33m(y/n)\033[0m#{clear}"
         args << "-O" if ask_for_arg(question, default_args[:skip_active_record])
-        
+
         args
       end
-      
+
       #pass in name if you want to create a rails app
       #pass in file_name if you want to create a template
       def run_template(name, recipes, gems, args, defaults, file_name=nil)
+        if options[:template_root]
+          RailsWizard::Template.template_root = options[:template_root]
+        end
+
         if file_name
           file = File.new(file_name,'w')
         else
