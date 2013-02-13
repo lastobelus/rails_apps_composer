@@ -32,8 +32,8 @@ end
 
 ## Template Engine
 if prefer :templates, 'haml'
-  gem 'haml', '>= 3.1.7'
-  gem 'haml-rails', '>= 0.3.5', :group => :development
+  gem 'haml', '>= 4.0'
+  gem 'haml-rails', '>= 0.4.0', group: :development, git: "git://github.com/lastobelus/haml-rails.git", branch: "devcloudcoder"
   # hpricot and ruby_parser are needed for conversion of HTML to Haml
   gem 'hpricot', '>= 0.8.6', :group => :development
   gem 'ruby_parser', '>= 3.1.1', :group => :development
