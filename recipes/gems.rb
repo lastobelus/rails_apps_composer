@@ -44,6 +44,7 @@ if prefer :templates, 'slim'
   gem 'haml2slim', '>= 0.4.6', :group => :development
   # Haml is needed for conversion of HTML to Slim
   gem 'haml', '>= 4.0'
+  gem 'html2haml', '>= 1.0'
   gem 'haml-rails', '>= 0.4.0', group: :development, git: "git://github.com/lastobelus/haml-rails.git", branch: "devcloudcoder"
   gem 'hpricot', '>= 0.8.6', :group => :development
   gem 'ruby_parser', '>= 3.1.1', :group => :development
