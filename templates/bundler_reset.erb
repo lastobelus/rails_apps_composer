@@ -1,0 +1,10 @@
+module ::Bundler
+  def self.reset
+    ENV['BUNDLE_GEMFILE'] = nil
+    @settings = nil
+    @load = nil
+    remove_instance_variable(:@setup) if defined?(@setup)
+    setup
+  end
+end
+Bundler.reset
